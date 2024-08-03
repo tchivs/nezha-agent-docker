@@ -27,11 +27,17 @@ jobs:
         run: |
           if git rev-parse "refs/tags/${{ env.LATEST_TAG }}" >/dev/null 2>&1; then
             echo "Tag already exists. No update needed."
+            echo "tag_exists=true" >> $GITHUB_ENV
             exit 0
+          else
+            echo "tag_exists=false" >> $GITHUB_ENV
           fi
 
       - name: Update Dockerfile and Fetch latest commit info
         run: |
+          if [ "${{ env.tag_exists }}" = "true" ]; then
+            exit 0
+          fi
           echo "Fetching latest commit info..."
           LATEST_TAG_COMMIT_URL=$(curl -s https://api.github.com/repos/nezhahq/agent/git/refs/tags/${{ env.LATEST_TAG }} | jq -r .object.url)
           LATEST_TAG_MESSAGE=$(curl -s ${LATEST_TAG_COMMIT_URL} | jq -r .message)
@@ -46,6 +52,9 @@ jobs:
 
       - name: Check for changes and Commit
         run: |
+          if [ "${{ env.tag_exists }}" = "true" ]; then
+            exit 0
+          fi
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
@@ -59,9 +68,9 @@ jobs:
           fi
 
       - name: Tag the repository
+        if: env.tag_exists == 'false'
         env:
           GH_TOKEN: ${{ secrets.PAT  }}
         run: |
           git tag ${{ env.LATEST_TAG }}
           git push origin ${{ env.LATEST_TAG }}
-        if: always() && steps.check_tag_exists.outcome == 'success'
