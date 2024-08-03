@@ -20,20 +20,31 @@ jobs:
         id: get_latest_tag
         run: |
           LATEST_TAG=$(curl -s https://api.github.com/repos/nezhahq/agent/releases/latest | jq -r .tag_name)
+          LATEST_TAG_COMMIT=$(curl -s https://api.github.com/repos/nezhahq/agent/git/refs/tags/${LATEST_TAG} | jq -r .object.sha)
+          LATEST_TAG_MESSAGE=$(curl -s https://api.github.com/repos/nezhahq/agent/git/tags/${LATEST_TAG_COMMIT} | jq -r .message)
           echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
+          echo "LATEST_TAG_COMMIT=${LATEST_TAG_COMMIT}" >> $GITHUB_ENV
+          echo "LATEST_TAG_MESSAGE=${LATEST_TAG_MESSAGE}" >> $GITHUB_ENV
+      -
+        name: Check if tag already exists
+        id: check_tag_exists
+        run: |
+          if git rev-parse "refs/tags/${{ env.LATEST_TAG }}" >/dev/null 2>&1; then
+            echo "Tag already exists. No update needed."
+            exit 0
+          fi
       -
         name: Update Dockerfile
-        id: update_dockerfile
         run: |
           sed -i "s/ARG NEZHA_VER=.*/ARG NEZHA_VER=${{ env.LATEST_TAG }}/" Dockerfile
           echo "Updated Dockerfile with NEZHA_VER=${{ env.LATEST_TAG }}"
       -
         name: Commit changes
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git add Dockerfile
-          git commit -m "Update Dockerfile to NEZHA_VER=${{ env.LATEST_TAG }}"
+          git commit -m "Update Dockerfile to NEZHA_VER=${{ env.LATEST_TAG }}\n\n${{ env.LATEST_TAG_MESSAGE }}"
           git push
       -
         name: Tag the repository
