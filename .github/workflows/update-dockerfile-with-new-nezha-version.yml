@@ -44,7 +44,7 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          if git diff --quiet; then
+          if git diff --exit-code; then
             echo "No changes to commit."
             exit 0
           else
