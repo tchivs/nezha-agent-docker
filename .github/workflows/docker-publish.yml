@@ -35,4 +35,6 @@ jobs:
         with:
           push: true
           platforms: linux/amd64,linux/arm64,linux/386
-          tags: tchivs/nezha-agent:${{ env.TAG_NAME }}
+          tags: |
+            tchivs/nezha-agent:${{ env.TAG_NAME }}
+            tchivs/nezha-agent:latest
