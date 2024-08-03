@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:  # 手动触发
 
 jobs:
   docker:
@@ -12,6 +13,9 @@ jobs:
       - 
         name: Check out the code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
       - 
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
