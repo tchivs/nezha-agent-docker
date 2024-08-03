@@ -20,11 +20,7 @@ jobs:
         id: get_latest_tag
         run: |
           LATEST_TAG=$(curl -s https://api.github.com/repos/nezhahq/agent/releases/latest | jq -r .tag_name)
-          LATEST_TAG_COMMIT=$(curl -s https://api.github.com/repos/nezhahq/agent/git/refs/tags/${LATEST_TAG} | jq -r .object.sha)
-          LATEST_TAG_MESSAGE=$(curl -s https://api.github.com/repos/nezhahq/agent/git/tags/${LATEST_TAG_COMMIT} | jq -r .message)
           echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
-          echo "LATEST_TAG_COMMIT=${LATEST_TAG_COMMIT}" >> $GITHUB_ENV
-          echo "LATEST_TAG_MESSAGE=${LATEST_TAG_MESSAGE}" >> $GITHUB_ENV
       -
         name: Check if tag already exists
         id: check_tag_exists
@@ -42,10 +38,18 @@ jobs:
         name: Check for changes
         id: check_changes
         run: |
-          if git diff --exit-code; then
+          if git diff --quiet; then
             echo "No changes to commit."
             exit 0
           fi
+      -
+        name: Get latest commit from NezhaHQ
+        id: get_latest_commit
+        run: |
+          LATEST_TAG_COMMIT=$(curl -s https://api.github.com/repos/nezhahq/agent/git/refs/tags/${{ env.LATEST_TAG }} | jq -r .object.sha)
+          LATEST_TAG_MESSAGE=$(curl -s https://api.github.com/repos/nezhahq/agent/git/tags/${LATEST_TAG_COMMIT} | jq -r .message)
+          echo "LATEST_TAG_COMMIT=${LATEST_TAG_COMMIT}" >> $GITHUB_ENV
+          echo "LATEST_TAG_MESSAGE=${LATEST_TAG_MESSAGE}" >> $GITHUB_ENV
       -
         name: Commit changes
         if: steps.check_changes.outcome != 'success'
@@ -60,4 +64,4 @@ jobs:
         if: steps.check_changes.outcome != 'success'
         run: |
           git tag ${{ env.LATEST_TAG }}
-          git push origin ${{ env.LATEST_TAG }}
+          git push origin ${{ env.LATEST_TAG }}"
