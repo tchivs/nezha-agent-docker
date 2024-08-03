@@ -9,45 +9,56 @@ jobs:
   check-new-tag:
     runs-on: ubuntu-latest
     steps:
-      - 
-        name: Check out the repository
+      - name: Check out the repository
         uses: actions/checkout@v3
-      - 
-        name: Install jq
+
+      - name: Install jq
         run: sudo apt-get install jq
-      -
-        name: Get latest release tag from NezhaHQ
+
+      - name: Get latest release tag from NezhaHQ
         id: get_latest_tag
         run: |
           LATEST_TAG=$(curl -s https://api.github.com/repos/nezhahq/agent/releases/latest | jq -r .tag_name)
+          echo "LATEST_TAG=${LATEST_TAG}"
           echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
-      -
-        name: Check if tag already exists
+
+      - name: Check if tag already exists
         id: check_tag_exists
         run: |
           if git rev-parse "refs/tags/${{ env.LATEST_TAG }}" >/dev/null 2>&1; then
             echo "Tag already exists. No update needed."
             exit 0
+          else
+            echo "Tag does not exist. Proceeding with update."
           fi
-      -
-        name: Update Dockerfile
+
+      - name: Display current Dockerfile content
+        run: cat Dockerfile
+
+      - name: Update Dockerfile
         run: |
           sed -i "s/ARG NEZHA_VER=.*/ARG NEZHA_VER=${{ env.LATEST_TAG }}/" Dockerfile
           echo "Updated Dockerfile with NEZHA_VER=${{ env.LATEST_TAG }}"
-      -
-        name: Check for changes
+          cat Dockerfile
+
+      - name: Check for changes
         id: check_changes
         run: |
           if git diff --quiet; then
             echo "No changes to commit."
             exit 0
+          else
+            echo "Changes detected. Proceeding with commit."
           fi
-      -
-        name: Commit changes
+
+      - name: Commit changes
         if: steps.check_changes.outcome != 'success'
         run: |
+          echo "Fetching latest commit info..."
           LATEST_TAG_COMMIT_URL=$(curl -s https://api.github.com/repos/nezhahq/agent/git/refs/tags/${{ env.LATEST_TAG }} | jq -r .object.url)
+          echo "LATEST_TAG_COMMIT_URL=${LATEST_TAG_COMMIT_URL}"
           LATEST_TAG_MESSAGE=$(curl -s ${LATEST_TAG_COMMIT_URL} | jq -r .message)
+          echo "LATEST_TAG_MESSAGE=${LATEST_TAG_MESSAGE}"
           echo "LATEST_TAG_COMMIT_URL=${LATEST_TAG_COMMIT_URL}" >> $GITHUB_ENV
           echo "LATEST_TAG_MESSAGE=${LATEST_TAG_MESSAGE}" >> $GITHUB_ENV
           git config --global user.name "${{ github.actor }}"
@@ -55,9 +66,9 @@ jobs:
           git add Dockerfile
           git commit -m "Update Dockerfile to NEZHA_VER=${{ env.LATEST_TAG }}\n\n${{ env.LATEST_TAG_MESSAGE }}"
           git push
-      -
-        name: Tag the repository
+
+      - name: Tag the repository
         if: steps.check_changes.outcome != 'success'
         run: |
           git tag ${{ env.LATEST_TAG }}
-          git push origin ${{ env.LATEST_TAG }}"
+          git push origin ${{ env.LATEST_TAG }}
