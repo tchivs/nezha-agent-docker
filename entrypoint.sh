@@ -18,4 +18,5 @@ if [ -n "${platform}" ] || [ -n "${version}" ]; then
     fi
 fi
 
-exec /usr/local/bin/nezha-agent -s ${domain}:${port} -p ${secret} ${args}
+# run nezha-agent
+exec /usr/local/bin/nezha-agent -s ${domain}:${port} -p ${secret} ${args} --debug
