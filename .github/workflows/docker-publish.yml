@@ -28,7 +28,7 @@ jobs:
       - name: Extract tag name
         id: extract_tag
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
+          TAG_NAME=${{github.ref_name}}
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
           echo "TAG_NAME=${TAG_NAME}"
 
