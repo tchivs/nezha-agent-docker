@@ -28,4 +28,4 @@ jobs:
         with:
           push: true
           platforms: linux/amd64,linux/arm64, linux/386
-          tags: redamancy2319/nezha-agent:latest
+          tags: tchivs/nezha-agent:latest
