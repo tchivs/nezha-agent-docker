@@ -33,7 +33,7 @@
 ### Docker Run
 
 ```shell
-docker run -d -e domain='<面板域名>' -e port='<面板端口>' -e secret='<节点密钥>' -e args='<nezha-agent运行额外参数>' -e platform='<自定义系统名>' -e version='<自定义系统版本>' --net='host' --name='<容器名>' redamancy2319/nezha-agent:latest
+docker run -d -e domain='<面板域名>' -e port='<面板端口>' -e secret='<节点密钥>' -e args='<nezha-agent运行额外参数>' -e platform='<自定义系统名>' -e version='<自定义系统版本>' --net='host' --name='<容器名>' tchivs/nezha-agent:latest
 ```
 
 要多次运行，可重复执行上述命令，并替换为不同面板的参数，但容器名不可重复。
@@ -46,7 +46,7 @@ docker run -d -e domain='<面板域名>' -e port='<面板端口>' -e secret='<�
 version: '3'
 services:
   nezha-agent:
-    image: redamancy2319/nezha-agent:latest
+    image: tchivs/nezha-agent:latest
     container_name: nezha-agent
     network_mode: host
     environment:
