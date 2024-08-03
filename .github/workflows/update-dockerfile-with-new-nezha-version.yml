@@ -1,0 +1,37 @@
+name: Update Dockerfile with New Nezha Version
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'  # 每12小时检查一次
+  workflow_dispatch:  # 手动触发
+
+jobs:
+  check-new-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Check out the repository
+        uses: actions/checkout@v2
+      - 
+        name: Install jq
+        run: sudo apt-get install jq
+      -
+        name: Get latest release tag from NezhaHQ
+        id: get_latest_tag
+        run: |
+          LATEST_TAG=$(curl -s https://api.github.com/repos/nezhahq/agent/releases/latest | jq -r .tag_name)
+          echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
+      -
+        name: Update Dockerfile
+        id: update_dockerfile
+        run: |
+          sed -i "s/ARG NEZHA_VER=.*/ARG NEZHA_VER=${{ env.LATEST_TAG }}/" Dockerfile
+          echo "Updated Dockerfile with NEZHA_VER=${{ env.LATEST_TAG }}"
+      -
+        name: Commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add Dockerfile
+          git commit -m "Update Dockerfile to NEZHA_VER=${{ env.LATEST_TAG }}"
+          git push
