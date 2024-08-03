@@ -28,7 +28,7 @@ jobs:
       - name: Extract version from Dockerfile
         id: extract_version
         run: |
-          NEZHA_VER=$(grep -oP '(?<=ARG NEZHA_VER=).*' Dockerfile | tr -d '[:space:]')
+          NEZHA_VER=$(grep -oP '(?<=ARG NEZHA_VER=v).*' Dockerfile | tr -d '[:space:]')
           echo "Extracted version: ${NEZHA_VER}"
           echo "NEZHA_VER=${NEZHA_VER}" >> $GITHUB_ENV
 
