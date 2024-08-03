@@ -43,17 +43,13 @@ jobs:
             exit 0
           fi
       -
-        name: Get latest commit from NezhaHQ
-        id: get_latest_commit
+        name: Commit changes
+        if: steps.check_changes.outcome != 'success'
         run: |
           LATEST_TAG_COMMIT_URL=$(curl -s https://api.github.com/repos/nezhahq/agent/git/refs/tags/${{ env.LATEST_TAG }} | jq -r .object.url)
           LATEST_TAG_MESSAGE=$(curl -s ${LATEST_TAG_COMMIT_URL} | jq -r .message)
           echo "LATEST_TAG_COMMIT_URL=${LATEST_TAG_COMMIT_URL}" >> $GITHUB_ENV
           echo "LATEST_TAG_MESSAGE=${LATEST_TAG_MESSAGE}" >> $GITHUB_ENV
-      -
-        name: Commit changes
-        if: steps.check_changes.outcome != 'success'
-        run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git add Dockerfile
