@@ -46,9 +46,9 @@ jobs:
         name: Get latest commit from NezhaHQ
         id: get_latest_commit
         run: |
-          LATEST_TAG_COMMIT=$(curl -s https://api.github.com/repos/nezhahq/agent/git/refs/tags/${{ env.LATEST_TAG }} | jq -r .object.sha)
-          LATEST_TAG_MESSAGE=$(curl -s https://api.github.com/repos/nezhahq/agent/git/tags/${LATEST_TAG_COMMIT} | jq -r .message)
-          echo "LATEST_TAG_COMMIT=${LATEST_TAG_COMMIT}" >> $GITHUB_ENV
+          LATEST_TAG_COMMIT_URL=$(curl -s https://api.github.com/repos/nezhahq/agent/git/refs/tags/${{ env.LATEST_TAG }} | jq -r .object.url)
+          LATEST_TAG_MESSAGE=$(curl -s ${LATEST_TAG_COMMIT_URL} | jq -r .message)
+          echo "LATEST_TAG_COMMIT_URL=${LATEST_TAG_COMMIT_URL}" >> $GITHUB_ENV
           echo "LATEST_TAG_MESSAGE=${LATEST_TAG_MESSAGE}" >> $GITHUB_ENV
       -
         name: Commit changes
