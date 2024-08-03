@@ -59,6 +59,8 @@ jobs:
           fi
 
       - name: Tag the repository
+        env:
+          GH_TOKEN: ${{ secrets.PAT  }}
         run: |
           git tag ${{ env.LATEST_TAG }}
           git push origin ${{ env.LATEST_TAG }}
