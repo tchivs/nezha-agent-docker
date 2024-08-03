@@ -53,7 +53,8 @@ jobs:
             echo "Changes detected. Proceeding with commit."
             git config --global user.name "${{ github.actor }}"
             git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-            git commit -m "Update Dockerfile to NEZHA_VER=${{ env.LATEST_TAG }}\n\n${{ env.LATEST_TAG_MESSAGE }}"
+            COMMIT_MESSAGE="Update Dockerfile to NEZHA_VER=${{ env.LATEST_TAG }} - ${LATEST_TAG_MESSAGE}"
+            git commit -m "${COMMIT_MESSAGE}"
             git push
           fi
 
