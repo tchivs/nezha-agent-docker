@@ -39,7 +39,16 @@ jobs:
           sed -i "s/ARG NEZHA_VER=.*/ARG NEZHA_VER=${{ env.LATEST_TAG }}/" Dockerfile
           echo "Updated Dockerfile with NEZHA_VER=${{ env.LATEST_TAG }}"
       -
+        name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --exit-code; then
+            echo "No changes to commit."
+            exit 0
+          fi
+      -
         name: Commit changes
+        if: steps.check_changes.outcome != 'success'
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
@@ -48,6 +57,7 @@ jobs:
           git push
       -
         name: Tag the repository
+        if: steps.check_changes.outcome != 'success'
         run: |
           git tag ${{ env.LATEST_TAG }}
           git push origin ${{ env.LATEST_TAG }}
