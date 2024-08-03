@@ -35,3 +35,8 @@ jobs:
           git add Dockerfile
           git commit -m "Update Dockerfile to NEZHA_VER=${{ env.LATEST_TAG }}"
           git push
+      -
+        name: Tag the repository
+        run: |
+          git tag ${{ env.LATEST_TAG }}
+          git push origin ${{ env.LATEST_TAG }}
