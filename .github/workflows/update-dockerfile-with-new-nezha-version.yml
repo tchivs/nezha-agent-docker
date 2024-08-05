@@ -22,20 +22,31 @@ jobs:
           echo "LATEST_TAG=${LATEST_TAG}"
           echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
 
-      - name: Check if tag already exists
-        id: check_tag_exists
+      - name: Check if tag already exists locally
+        id: check_tag_exists_locally
         run: |
           if git rev-parse "refs/tags/${{ env.LATEST_TAG }}" >/dev/null 2>&1; then
-            echo "Tag already exists. No update needed."
-            echo "tag_exists=true" >> $GITHUB_ENV
+            echo "Tag already exists locally. No update needed."
+            echo "tag_exists_locally=true" >> $GITHUB_ENV
             exit 0
           else
-            echo "tag_exists=false" >> $GITHUB_ENV
+            echo "tag_exists_locally=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check if tag already exists remotely
+        id: check_tag_exists_remotely
+        run: |
+          if git ls-remote --tags origin | grep "refs/tags/${{ env.LATEST_TAG }}" >/dev/null 2>&1; then
+            echo "Tag already exists remotely. No update needed."
+            echo "tag_exists_remotely=true" >> $GITHUB_ENV
+            exit 0
+          else
+            echo "tag_exists_remotely=false" >> $GITHUB_ENV
           fi
 
       - name: Update Dockerfile and Fetch latest commit info
         run: |
-          if [ "${{ env.tag_exists }}" = "true" ]; then
+          if [ "${{ env.tag_exists_locally }}" = "true" ] || [ "${{ env.tag_exists_remotely }}" = "true" ]; then
             exit 0
           fi
           echo "Fetching latest commit info..."
@@ -52,7 +63,7 @@ jobs:
 
       - name: Check for changes and Commit
         run: |
-          if [ "${{ env.tag_exists }}" = "true" ]; then
+          if [ "${{ env.tag_exists_locally }}" = "true" ] || [ "${{ env.tag_exists_remotely }}" = "true" ]; then
             exit 0
           fi
           if git diff --cached --quiet; then
@@ -68,7 +79,7 @@ jobs:
           fi
 
       - name: Tag the repository
-        if: env.tag_exists == 'false'
+        if: env.tag_exists_locally == 'false' && env.tag_exists_remotely == 'false'
         env:
           GH_TOKEN: ${{ secrets.PAT  }}
         run: |
