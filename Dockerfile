@@ -1,6 +1,6 @@
 FROM debian:11-slim
 
-ARG NEZHA_VER=v0.19.1
+ARG NEZHA_VER=v0.19.2
 
 ENV domain="" port="5555" secret="" args="--disable-auto-update" platform="" version=""
 
